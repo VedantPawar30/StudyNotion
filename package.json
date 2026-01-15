@@ -1,0 +1,11 @@
+{
+  "name": "root",
+  "private": true,
+  "dependencies": {
+    
+    "concurrently": "^9.0.0"
+  },
+  "scripts": {
+    "dev": "concurrently -n CLIENT,SERVER -c magenta,cyan \"npm run dev --prefix client\" \"npm run dev --prefix server\""
+  }
+}
