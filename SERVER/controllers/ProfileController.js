@@ -1,7 +1,9 @@
 const Profile = require("../models/Profile")
 const User = require("../models/User")
 const Course = require("../models/Course")
+const CourseProgress = require("../models/CourseProgress")
 const {imageUploader} = require("../utils/imageUploader")
+const { convertSecondsToDuration } = require("../utils/secToDuration")
 require("dotenv").config()
 exports.updateProfile = async (req,res) =>{
     try{
@@ -173,23 +175,106 @@ exports.getEnrolledCourses = async (req,res) =>{
             })
         }
         //Find all the courses in which the user is enrolled
-        const userDetails = await User.findById(userId).populate("courses").exec()
+        const userDetails = await User.findById(userId).populate({
+            path:"courses",
+                populate :{
+                    path : "courseContent",
+                    populate : {
+                        path : "subsection"
+                    }
+                }
+            }
+        ).exec()
         if(!userDetails){
             return res.status(404).json({
                 success:false,
                 message :"User not found"
             })
         }
+
+        const courses = userDetails.courses;
+        const fullCourseData = [];
+        for(let i=0; i<courses.length; i++){
+            const course = courses[i]._doc;
+            const courseProgress = await CourseProgress.findOne({courseId : course._id, userId : req.user.id})
+            let progress = 0
+            if(courseProgress){
+                const completedVideos = courseProgress.completedVideos.length
+                const totalVideos = course.courseContent.reduce((acc, section) => acc + section.subsection.length, 0)
+                progress = totalVideos === 0 ? 0 : (completedVideos / totalVideos) * 100
+                
+            }
+            else{
+                progress = 0
+            }
+
+            // Calculate total duration of the course
+            let totalDurationInSeconds = 0;
+            
+            course.courseContent.forEach(section => {
+                section.subsection.forEach(sub => {
+                    const timeDurationInSeconds = parseInt(sub.timeDuration)
+                    totalDurationInSeconds += timeDurationInSeconds
+                })
+            })
+
+            const totalDuration = convertSecondsToDuration(totalDurationInSeconds)
+
+            fullCourseData.push({...course, totalDuration, progress})
+
+            
+        }
+
         res.status(200).json({
             success:true,
             message : "Enrolled courses fetched successfully",
-            courses : userDetails.courses
+            courses : fullCourseData,
         })
     }
     catch(err){
         return res.status(500).json({
             success:false,
             message : "Unable to fetch enrolled courses",
+            error:err.message
+        })
+    }
+}
+
+
+exports.instructorDashboard = async (req,res) =>{
+    try{
+        const userId = req.user.id
+
+        const courseDetails = await Course.find({instructor : userId})
+        const courseData = courseDetails.map((course) =>{
+            const totalStudentsEnrolled = course.studentsEnrolled.length
+            const totalAmountGenerated = totalStudentsEnrolled * course.price
+
+            // Create an object with the required details
+            const courseDataWithStats = {
+                _id : course._id,
+                courseName : course.courseName,
+                courseDescription : course.courseDescription,
+                thumbnail : course.thumbnail,
+                price : course.price,
+                status : course.status,
+                createdAt : course.createdAt,
+                totalStudentsEnrolled,
+                totalAmountGenerated
+            }
+            return courseDataWithStats
+        })
+        
+        return res.status(200).json({
+            success:true,
+            message : "Instructor dashboard fetched successfully",
+            courses : courseData
+        })
+    }
+    catch(err){
+        return res.status(500).json({
+            success:false,
+            message : "Unable to fetch instructor dashboard",
             error:err.message
         })
     }

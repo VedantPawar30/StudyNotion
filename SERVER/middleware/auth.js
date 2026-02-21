@@ -16,7 +16,7 @@ exports.authMiddleware = (req,res,next) =>{
         return res.status(500).json(
             {
                 success:false,
-                message:"Internal Server Error"
+                message:"Middleware Issue: Internal Server Error"
             }
         )
     }
@@ -50,7 +50,7 @@ exports.isInstructor = (req,res,next) =>{
         return res.status(500).json(
             {
                 success:false,
-                message:"Internal Server Error"
+                message:"This One is Instructor Middleware Internal Server Error"
             }
         )
     }

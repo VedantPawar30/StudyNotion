@@ -146,7 +146,7 @@ exports.login = async (req,res) =>{
             id: existingUser._id,
             accountType: existingUser.accountType
 
-        }, process.env.JWT_SECRET, {expiresIn:"3h"}
+        }, process.env.JWT_SECRET, {expiresIn:"3d"}
         )
 
         existingUser.token = token

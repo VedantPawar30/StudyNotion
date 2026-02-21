@@ -123,7 +123,8 @@ exports.getAverageRating = async (req, res) => {
 
 exports.getAllRating = async (req, res) => {
     try{
-        const allRatings = await RatingAndReview.find()
+        const allRatings = await RatingAndReview.find({})
+                                .sort({rating:-1})
                                 .populate({
                                     path:"user",
                                     select:"firstName lastName email image"

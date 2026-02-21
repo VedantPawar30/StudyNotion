@@ -21,6 +21,14 @@ import EnrolledCourses from './components/core/Dashboard/EnrolledCourses';
 import Cart from './components/core/Dashboard/Cart/index.jsx'
 import { useSelector } from 'react-redux';
 import { ACCOUNT_TYPE } from './utils/constants.js';
+import AddCourse from './components/core/Dashboard/AddCourse/index.jsx';
+import MyCourses from './components/core/Dashboard/MyCourses.jsx';
+import EditCourse from './components/core/Dashboard/EditCourse/index.jsx';
+import Catalog from './pages/Catalog.jsx';
+import CourseDetails from './pages/CourseDetails.jsx';
+import ViewCourse from './pages/ViewCourse.jsx';
+import VideoDetails from './components/core/ViewCourse/VideoDetails.jsx';
+import Instructor from './components/core/Dashboard/InstructorDashboard/Instructor.jsx';
 function App() {
   const { user } = useSelector((state) => state.profile)
   return (
@@ -28,6 +36,8 @@ function App() {
       <NavBar></NavBar>
       <Routes>
         <Route path="/" element={<Home/>} />
+        <Route path="/catalog/:catalogName" element={<Catalog/>} />
+        <Route path="/courses/:courseId" element={<CourseDetails/>} />
         <Route 
           path="/login"
           element={
@@ -101,6 +111,7 @@ function App() {
                     </PrivateRoute>
                  }
             />
+            
             <Route
               path='/dashboard/settings'
               element={
@@ -132,7 +143,71 @@ function App() {
                 </>
               )
             }
+            {
+              user?.accountType === ACCOUNT_TYPE.INSTRUCTOR && (
+                <>
+                  <Route 
+                    path='/dashboard/add-course'
+                    element={
+                      <PrivateRoute>
+                        <AddCourse/>
+                      </PrivateRoute>
+                    }
+                  />
+
+                  <Route 
+                    path='/dashboard/instructor'
+                    element={
+                      <PrivateRoute>
+                        <Instructor/>
+                      </PrivateRoute>
+                    }
+                  />
+
+                  <Route
+                    path='/dashboard/my-courses'
+                    element={
+                      <PrivateRoute>
+                        <MyCourses/>
+                      </PrivateRoute>
+                    }
+                  />
+                  <Route
+                    path='/dashboard/edit-course/:courseId'
+                    element={
+                      <PrivateRoute>
+                        <EditCourse/>
+                      </PrivateRoute>
+                    }
+                  />
+                </>
+              )
+            }
           </Route>
+          
+          <Route
+          element={
+            <PrivateRoute>
+              <ViewCourse />
+            </PrivateRoute>
+          }>
+          {
+            user?.accountType === ACCOUNT_TYPE.STUDENT && (
+              <>
+                <Route 
+                  path='/view-course/:courseId/section/:sectionId/sub-section/:subSectionId'
+                  element={
+                    <VideoDetails/>
+                  }
+                >
+
+                </Route>
+              </>
+            )
+          }
+
+          </Route>
+
 
           
                 

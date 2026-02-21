@@ -1,6 +1,6 @@
 const Section = require("../models/Section");
 const Course = require("../models/Course"); 
-const SubSection = require("../models/SubSection");
+const SubSection = require("../models/Subsection");
 
 exports.createSection = async (req,res)=>{
     try{
@@ -49,7 +49,7 @@ exports.createSection = async (req,res)=>{
             success:true,
             message:"Section created successfully",
             data:newSection,
-            updatedCourseDetails: updatedCourseDetails
+            updatedCourseDetails
         })
     }
     catch(err){
@@ -63,8 +63,8 @@ exports.createSection = async (req,res)=>{
 
 exports.updateSection = async (req,res)=>{
     try{
-        const {newSectionName,sectionId} = req.body;
-        if(!newSectionName || !sectionId){
+        const {newSectionName,sectionId,courseId} = req.body;
+        if(!newSectionName || !sectionId || !courseId){
             return res.status(400).json({
                 success:false,
                 message:"All fields are required"
@@ -81,10 +81,19 @@ exports.updateSection = async (req,res)=>{
         }
         sectionDetails.sectionName = newSectionName;
         await sectionDetails.save();
+
+        const courseDetails = await Course.findById(courseId)
+        .populate({
+            path: "courseContent",
+            populate: {
+                path: "subsection"
+            }
+        }).exec();
+
         res.status(200).json({
             success:true,
             message:"Section updated successfully",
-            data:sectionDetails
+            data:courseDetails,
         })
         
     }
@@ -100,8 +109,8 @@ exports.updateSection = async (req,res)=>{
 
 exports.deleteSection = async (req,res)=>{
     try{
-        const {sectionId} = req.params;
-        const {courseId} = req.body;
+        // const {sectionId} = req.params;
+        const {sectionId,courseId} = req.body;
         if(!sectionId || !courseId){
             return res.status(400).json({
                 success:false,
@@ -138,11 +147,18 @@ exports.deleteSection = async (req,res)=>{
 
         // Delete the section
         const deletedSection = await Section.findByIdAndDelete(sectionId);
+        const courseDetails = await Course.findById(courseId)
+        .populate({
+            path: "courseContent",
+            populate: {
+                path: "subsection"
+            }
+        }).exec();
 
         res.status(200).json({
             success:true,
             message:"Section deleted successfully",
-            deletedSection:deletedSection
+            data:courseDetails
         });
     }
     catch(err){
