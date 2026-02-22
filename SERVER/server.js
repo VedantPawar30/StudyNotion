@@ -9,7 +9,7 @@ require("dotenv").config()
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin:"http://localhost:5173",
+    origin:true,
     credentials:true,
 }))
 app.use(
@@ -47,8 +47,9 @@ app.get("/", (req,res)=>{
 })
 
 //Starting the server
-app.listen(process.env.PORT, ()=>{
-    console.log("Server started at port ",process.env.PORT)
+const PORT = process.env.PORT || 4000
+app.listen(PORT, ()=>{
+    console.log("Server started at port ",PORT)
 })
 
 
