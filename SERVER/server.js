@@ -9,7 +9,7 @@ require("dotenv").config()
 app.use(express.json())
 app.use(cookieParser())
 app.use(cors({
-    origin:true,
+    origin:"https://studynotion-self-iota.vercel.app/",
     credentials:true,
 }))
 app.use(
