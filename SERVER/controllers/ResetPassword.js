@@ -15,7 +15,7 @@ exports.resetPasswordToken = async (req, res) => {
         user.resetPasswordToken = token;
         user.resetPasswordExpires = Date.now() + 5*60*1000; // 5 minutes
         await user.save();
-        const url = `http://localhost:5173/update-password/${token}`
+        const url = `https://studynotion-self-iota.vercel.app/update-password/${token}`
         const message = `You are receiving this email because you have requested the reset of the password for your account.\n\n
         Please click on the following link, or paste this into your browser to complete the process within 5 mins of receiving it:\n\n
         ${url}\n\n
